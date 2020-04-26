@@ -32,12 +32,12 @@ async def async_setup(hass: HomeAssistant, *_) -> bool:
 
     async def update_devices(*_) -> None:
         _LOGGER.debug("Scheduled update of all devices")
-        data_connection = hass.data.get(DATA_INCONTROL2)
+        incontrol2device = hass.data.get(DATA_INCONTROL2)
 
-        if incontrol2 is None:
+        if incontrol2device is None:
             return
 
-        await data_connection.update_all_devices()
+        await incontrol2device.update_all()
 
     async_track_time_interval(hass, update_devices, SCAN_INTERVAL)
     hass.services.async_register(DOMAIN, 'update_all', update_service)

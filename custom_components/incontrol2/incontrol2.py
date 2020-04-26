@@ -202,6 +202,17 @@ class InControl2Device:
     def get_devices(cls):
         return cls._devices
 
+    @classmethod
+    def update_all(cls) -> None:
+        for device in cls.get_devices():
+            if not await device.update():
+                _LOGGER.warning(f"Update failed for {device.name} ({device.device_id}). "
+                                f"Likely throttled (min_interval: {MIN_TIME_BETWEEN_UPDATES})")
+                continue
+
+            for entity in device.entities:
+                entity.async_schedule_update_ha_state(True)
+
     def __init__(self, device_id: int, data: dict, org_id: str, group_id: int, session: InControl2Connection):
         """Initialize the Ambiclimate device class."""
         self._device_id = device_id
