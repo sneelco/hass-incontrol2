@@ -3,6 +3,8 @@ import logging
 
 from . import incontrol2
 
+import voluptuous as vol
+from aiohttp.web import Response, HTTPBadRequest
 from homeassistant import config_entries
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import callback
@@ -49,26 +51,38 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
         """Initialize flow."""
         self._registered_view = False
         self._oauth = None
+        self.data_schema = {
+            vol.Required(CONF_CLIENT_ID): str,
+            vol.Required(CONF_CLIENT_SECRET): str,
+        }
 
     async def async_step_user(self, user_input=None):
         """Handle external yaml configuration."""
         if self.hass.config_entries.async_entries(DOMAIN):
             return self.async_abort(reason="already_setup")
 
-        config = self.hass.data.get(DATA_INCONTROL2_IMPL, {})
+        if not user_input:
+            return self.async_show_form(
+                step_id="user",
+                data_schema=vol.Schema(self.data_schema),
+            )
 
-        if not config:
-            _LOGGER.debug("No config")
-            return self.async_abort(reason="no_config")
+        self.hass.data[DATA_INCONTROL2_IMPL] = user_input
 
         return await self.async_step_auth()
 
     async def async_step_auth(self, user_input=None):
         """Handle a flow start."""
+
+        config = self.hass.data[DATA_INCONTROL2_IMPL]
+
         if self.hass.config_entries.async_entries(DOMAIN):
             return self.async_abort(reason="already_setup")
 
         errors = {}
+
+        if "code" in config:
+            return await self.async_step_code(config["code"])
 
         if user_input is not None:
             errors["base"] = "follow_link"
@@ -87,8 +101,6 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
 
     async def async_step_code(self, code=None):
         """Received code for authentication."""
-        if self.hass.config_entries.async_entries(DOMAIN):
-            return self.async_abort(reason="already_setup")
 
         token_info = await self._get_token_info(code)
 
@@ -117,7 +129,7 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
         self.hass.http.register_view(Incontrol2AuthCallbackView())
         self._registered_view = True
 
-    def _generate_oauth(self):
+    def _generate_oauth(self,):
         config = self.hass.data[DATA_INCONTROL2_IMPL]
         clientsession = async_get_clientsession(self.hass)
         callback_url = self._cb_url()
@@ -149,11 +161,9 @@ class Incontrol2AuthCallbackView(HomeAssistantView):
         """Receive authorization token."""
         code = request.query.get("code")
         if code is None:
-            return "No code"
+            return Response(text="No code was provided", status=HTTPBadRequest.status_code)
+
         hass = request.app["hass"]
-        hass.async_create_task(
-            hass.config_entries.flow.async_init(
-                DOMAIN, context={"source": "code"}, data=code
-            )
-        )
-        return "OK!"
+        hass.data[DATA_INCONTROL2_IMPL]["code"] = code
+
+        return Response(text="Authentication was successful. You can close this window.")

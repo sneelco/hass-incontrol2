@@ -1,14 +1,17 @@
 {
   "config": {
     "step": {
+      "user": {
+        "title": "InControl2 API Client Configuration",
+        "data": {
+            "client_id": "Client ID",
+            "client_secret": "Client Secret"
+        }
+      },
       "auth": {
         "title": "Authenticate InControl2",
         "description": "Please follow this [link]({authorization_url}) and <b>Allow</b> access to your InControl2 account, then come back and press <b>Submit</b> below.\n(Make sure the specified callback url is {cb_url})"
       }
-    },
-    "list_org": {
-      "title": "Select an Organization",
-      "default": "Successfully authenticated with InControl2"
     },
     "create_entry": {
       "default": "Successfully authenticated with InControl2"
