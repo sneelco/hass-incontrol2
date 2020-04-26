@@ -95,18 +95,6 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
         if token_info is None:
             return self.async_abort(reason="access_token")
 
-        errors = {}
-
-        return self.async_show_form(
-            step_id="list_org",
-            description_placeholders={
-                "orgs": [{"org_id": "asd", "name": "My Org"}],
-            },
-            errors=errors,
-        )
-
-    async def async_select_org(seld, org_id):
-
         config = self.hass.data[DATA_INCONTROL2_IMPL].copy()
         config["callback_url"] = self._cb_url()
 
