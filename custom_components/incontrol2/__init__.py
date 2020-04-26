@@ -39,19 +39,11 @@ CONFIG_SCHEMA = vol.Schema(
 
 async def async_setup(hass, config):
     """Set up Inconstrol2 components."""
-    if DOMAIN not in config:
-        return True
 
-    conf = config[DOMAIN]
-    scan_interval = conf.get(CONF_SCAN_INTERVAL)
-    client_id = conf[CONF_CLIENT_ID]
-    client_secret = conf[CONF_CLIENT_SECRET]
+    async def update_service(call):
+        await update_devices()
 
-    config_flow.register_flow_implementation(
-        hass, client_id, client_secret
-    )
-
-    async def update_devices(now):
+    async def update_devices(now=None):
         data_connection = hass.data.get(DATA_INCONTROL2)
 
         if incontrol2 is None:
@@ -59,7 +51,8 @@ async def async_setup(hass, config):
 
         await data_connection.update_all_devices()
 
-    async_track_time_interval(hass, update_devices, scan_interval)
+    async_track_time_interval(hass, update_devices, SCAN_INTERVAL)
+    hass.services.async_register(DOMAIN, 'update_all', update_service)
 
     return True
 
