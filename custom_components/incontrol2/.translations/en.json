@@ -1,0 +1,26 @@
+{
+  "config": {
+    "step": {
+      "auth": {
+        "title": "Authenticate InControl2",
+        "description": "Please follow this [link]({authorization_url}) and <b>Allow</b> access to your InControl2 account, then come back and press <b>Submit</b> below.\n(Make sure the specified callback url is {cb_url})"
+      }
+    },
+    "list_org": {
+      "title": "Select an Organization",
+      "default": "Successfully authenticated with InControl2"
+    },
+    "create_entry": {
+      "default": "Successfully authenticated with InControl2"
+    },
+    "error": {
+      "no_token": "Not authenticated with InControl2",
+      "follow_link": "Please follow the link and authenticate before pressing Submit"
+    },
+    "abort": {
+      "already_setup": "The InControl2 account is configured.",
+      "no_config": "You need to configure InControl2 before being able to authenticate with it. [Please read the instructions](https://www.github.com/sneelco/hass-incontrol2/).",
+      "access_token": "Unknown error generating an access token."
+    }
+  }
+}

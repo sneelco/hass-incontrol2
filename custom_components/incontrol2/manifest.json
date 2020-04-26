@@ -1,0 +1,9 @@
+{
+  "domain": "incontrol2",
+  "name": "InControl2",
+  "config_flow": true,
+  "documentation": "https://www.github.com/sneelco/hass-incontrol2",
+  "requirements": [],
+  "dependencies": ["http"],
+  "codeowners": ["@sneelco"]
+}
