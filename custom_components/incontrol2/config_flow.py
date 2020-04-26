@@ -1,13 +1,12 @@
 """Config flow for InControl2."""
 import logging
 
-from . import incontrol2
+from .incontrol2 import InControl2OAuth, InControl2OauthError
 
 import voluptuous as vol
-from aiohttp.web import Response, HTTPBadRequest
+from aiohttp.web import Response, HTTPBadRequest, Request
 from homeassistant import config_entries
 from homeassistant.components.http import HomeAssistantView
-from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
@@ -23,21 +22,6 @@ from .const import (
 DATA_INCONTROL2_IMPL = "incontrol2_flow_implementation"
 
 _LOGGER = logging.getLogger(__name__)
-
-
-@callback
-def register_flow_implementation(hass, client_id, client_secret):
-    """Register a incontrol2 implementation.
-
-    client_id: Client id.
-    client_secret: Client secret.
-    """
-    hass.data.setdefault(DATA_INCONTROL2_IMPL, {})
-
-    hass.data[DATA_INCONTROL2_IMPL] = {
-        CONF_CLIENT_ID: client_id,
-        CONF_CLIENT_SECRET: client_secret,
-    }
 
 
 @config_entries.HANDLERS.register("incontrol2")
@@ -56,7 +40,7 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
             vol.Required(CONF_CLIENT_SECRET): str,
         }
 
-    async def async_step_user(self, user_input=None):
+    async def async_step_user(self, user_input=None) -> dict:
         """Handle external yaml configuration."""
         if self.hass.config_entries.async_entries(DOMAIN):
             return self.async_abort(reason="already_setup")
@@ -71,7 +55,7 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
 
         return await self.async_step_auth()
 
-    async def async_step_auth(self, user_input=None):
+    async def async_step_auth(self, user_input=None) -> dict:
         """Handle a flow start."""
 
         config = self.hass.data[DATA_INCONTROL2_IMPL]
@@ -99,12 +83,12 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
             errors=errors,
         )
 
-    async def async_step_code(self, code=None):
+    async def async_step_code(self, code: str = None) -> dict:
         """Received code for authentication."""
 
-        token_info = await self._get_token_info(code)
-
-        if token_info is None:
+        try:
+            await self._get_token_info(code)
+        except InControl2OauthError:
             return self.async_abort(reason="access_token")
 
         config = self.hass.data[DATA_INCONTROL2_IMPL].copy()
@@ -112,29 +96,25 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
 
         return self.async_create_entry(title="InControl2", data=config)
 
-    async def _get_token_info(self, code):
+    async def _get_token_info(self, code: str) -> dict:
         oauth = self._generate_oauth()
-        try:
-            token_info = await oauth.get_access_token(code)
-        except incontrol2.InControl2OauthError:
-            _LOGGER.error("Failed to get access token", exc_info=True)
-            return None
+        token_info = await oauth.get_access_token(code)
 
         store = self.hass.helpers.storage.Store(STORAGE_VERSION, STORAGE_KEY)
         await store.async_save(token_info)
 
         return token_info
 
-    def _generate_view(self):
+    def _generate_view(self) -> None:
         self.hass.http.register_view(Incontrol2AuthCallbackView())
         self._registered_view = True
 
-    def _generate_oauth(self,):
+    def _generate_oauth(self) -> InControl2OAuth:
         config = self.hass.data[DATA_INCONTROL2_IMPL]
         clientsession = async_get_clientsession(self.hass)
         callback_url = self._cb_url()
 
-        oauth = incontrol2.InControl2OAuth(
+        oauth = InControl2OAuth(
             config.get(CONF_CLIENT_ID),
             config.get(CONF_CLIENT_SECRET),
             callback_url,
@@ -142,10 +122,10 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
         )
         return oauth
 
-    def _cb_url(self):
+    def _cb_url(self) -> str:
         return f"{self.hass.config.api.base_url}{AUTH_CALLBACK_PATH}"
 
-    async def _get_authorize_url(self):
+    async def _get_authorize_url(self) -> str:
         oauth = self._generate_oauth()
         return oauth.get_authorize_url()
 
@@ -157,7 +137,8 @@ class Incontrol2AuthCallbackView(HomeAssistantView):
     url = AUTH_CALLBACK_PATH
     name = AUTH_CALLBACK_NAME
 
-    async def get(self, request):
+    @staticmethod
+    async def get(request: Request) -> Response:
         """Receive authorization token."""
         code = request.query.get("code")
         if code is None:

@@ -2,10 +2,10 @@
 import logging
 from datetime import timedelta
 
-import voluptuous as vol
 from . import incontrol2
 
-from homeassistant.helpers import config_validation as cv
+from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
@@ -23,27 +23,15 @@ _LOGGER = logging.getLogger(__name__)
 
 SCAN_INTERVAL = timedelta(minutes=10)
 
-CONFIG_SCHEMA = vol.Schema(
-    {
-        DOMAIN: vol.Schema(
-            {
-                vol.Required(CONF_CLIENT_ID): cv.string,
-                vol.Required(CONF_CLIENT_SECRET): cv.string,
-                vol.Optional(CONF_SCAN_INTERVAL, default=SCAN_INTERVAL): cv.time_period,
-            }
-        )
-    },
-    extra=vol.ALLOW_EXTRA,
-)
 
+async def async_setup(hass: HomeAssistant, *_) -> bool:
+    """Set up InControl2 components."""
 
-async def async_setup(hass, config):
-    """Set up Inconstrol2 components."""
-
-    async def update_service(call):
+    async def update_service(*_) -> None:
         await update_devices()
 
-    async def update_devices(now=None):
+    async def update_devices(*_) -> None:
+        _LOGGER.debug("Scheduled update of all devices")
         data_connection = hass.data.get(DATA_INCONTROL2)
 
         if incontrol2 is None:
@@ -57,7 +45,7 @@ async def async_setup(hass, config):
     return True
 
 
-async def async_setup_entry(hass, entry):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Incontrol2 from a config entry."""
 
     config = entry.data
@@ -79,7 +67,7 @@ async def async_setup_entry(hass, entry):
 
     if not token_info:
         _LOGGER.error("Failed to refresh access token")
-        return
+        return False
 
     await store.async_save(token_info)
 
@@ -87,11 +75,11 @@ async def async_setup_entry(hass, entry):
         oauth, token_info=token_info, websession=websession
     )
 
-    if not await data_connection.find_orgs():
+    if not await incontrol2.InControl2Org.find_orgs(data_connection):
         _LOGGER.error("No orgs found")
-        return
+        return False
 
-    hass.data[DATA_INCONTROL2] = data_connection
+    hass.data[DATA_INCONTROL2] = incontrol2.InControl2Device
 
     hass.async_create_task(
         hass.config_entries.async_forward_entry_setup(entry, "sensor")

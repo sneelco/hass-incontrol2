@@ -1,7 +1,11 @@
 """Support for InControl2 vehicles."""
 
 import logging
+from typing import Callable
 
+from .incontrol2 import InControl2Device
+from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.components.device_tracker.config_entry import TrackerEntity
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.components.device_tracker.const import (
@@ -9,17 +13,18 @@ from homeassistant.components.device_tracker.const import (
 )
 
 from .const import (
-    DOMAIN,
-    DATA_INCONTROL2
+    DOMAIN
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(_hass: HomeAssistant,
+                            _entry: ConfigEntry,
+                            async_add_entities: Callable[[list, bool], None]) -> None:
     """Set up the Ambicliamte device from config entry."""
     devs = []
-    for device in hass.data[DATA_INCONTROL2].get_all_devices():
+    for device in InControl2Device.get_devices():
         devs.append(InControl2DeviceTracker(device, {}))
 
     async_add_entities(devs, True)
@@ -27,7 +32,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 class InControl2DeviceTracker(TrackerEntity, RestoreEntity):
 
-    def __init__(self, vehicle, store):
+    def __init__(self, vehicle: InControl2Device, store):
         """Initialize the sensor."""
         """Initialize the thermostat."""
         self._vehicle = vehicle
