@@ -1,0 +1,6 @@
+{
+  "name": "InControl2",
+  "country": "US",
+  "render_readme": true,
+  "domains": ["sensor","device_tracker"]
+}
