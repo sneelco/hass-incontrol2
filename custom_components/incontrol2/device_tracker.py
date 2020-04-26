@@ -89,10 +89,3 @@ class InControl2DeviceTracker(TrackerEntity, RestoreEntity):
     def state_attributes(self):
         """Return the state attributes of the sun."""
         return self._vehicle.location
-
-    async def async_update(self):
-        """Fetch new state data for the sensor.
-        This is the only method that should fetch new data for Home Assistant.
-        """
-
-        await self._vehicle.update()

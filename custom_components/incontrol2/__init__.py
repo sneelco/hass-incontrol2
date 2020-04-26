@@ -39,9 +39,11 @@ async def async_setup(hass: HomeAssistant, *_) -> bool:
 
         await incontrol2device.update_all()
 
-    async_track_time_interval(hass, update_devices, SCAN_INTERVAL)
     hass.services.async_register(DOMAIN, 'update_all', update_service)
+    # TODO: Add service for checking for new devices
 
+    async_track_time_interval(hass, update_devices, SCAN_INTERVAL)
+    # TODO: Check for new devices occasionally
     return True
 
 

@@ -76,13 +76,6 @@ class InControl2Vehicle(Entity):
         """Return the state attributes of the sun."""
         return self._vehicle.data
 
-    async def async_update(self):
-        """Fetch new state data for the sensor.
-        This is the only method that should fetch new data for Home Assistant.
-        """
-
-        await self._vehicle.update()
-
 
 class InControl2Wan(Entity):
 
@@ -158,10 +151,3 @@ class InControl2Wan(Entity):
     def state_attributes(self):
         """Return the state attributes of the sun."""
         return self._wan
-
-    async def async_update(self):
-        """Fetch new state data for the sensor.
-        This is the only method that should fetch new data for Home Assistant.
-        """
-
-        await self._vehicle.update()

@@ -171,19 +171,6 @@ class InControl2Connection(object):
 
         return await resp.text()
 
-    @staticmethod
-    async def update_all_devices() -> None:
-        devices = InControl2Device.get_devices()
-
-        for device in devices:
-            if not await device.update():
-                _LOGGER.warning(f"Update failed for {device.name} ({device.device_id}). "
-                                f"Likely throttled (min_interval: {MIN_TIME_BETWEEN_UPDATES})")
-                continue
-
-            for entity in device.entities:
-                entity.async_schedule_update_ha_state(True)
-
 
 def is_token_expired(token_info: dict) -> int:
     """Check if token is expired."""
@@ -203,7 +190,7 @@ class InControl2Device:
         return cls._devices
 
     @classmethod
-    def update_all(cls) -> None:
+    async def update_all(cls) -> None:
         for device in cls.get_devices():
             if not await device.update():
                 _LOGGER.warning(f"Update failed for {device.name} ({device.device_id}). "
@@ -237,6 +224,9 @@ class InControl2Device:
         self._location = await self._update_location()
         self._wans = await self._update_wans()
 
+        for entity in self.entities:
+            entity.async_schedule_update_ha_state(True)
+
         return True
 
     async def _update_device(self) -> dict:
@@ -264,13 +254,12 @@ class InControl2Device:
         return {}
 
     async def _update_wans(self) -> list:
-        url = f'o/{self._org_id}/g/{self._group_id}/d/{self._device_id}/info/interfaces'
-        res = await self.session.request(url, {})
-        _LOGGER.debug(url)
+        res = await self.session.request(f'o/{self._org_id}/g/{self._group_id}/d/{self._device_id}/info/interfaces', {})
         if not res:
             return []
         res = json.loads(res)
 
+        # TODO: This sometimes returns no interfaces.  Should add back-off/retry logic here
         return res.get('data', [])
 
     @property
