@@ -19,6 +19,24 @@ _LOGGER = logging.getLogger(__name__)
 MIN_TIME_BETWEEN_UPDATES = timedelta(minutes=5)
 
 
+def retry(times=3, backoff=10, return_value=None):
+
+    def retry_decorator(func):
+        async def wrapper(*original_args, **original_kwargs):
+            for attempt in range(times):
+                result = await func(*original_args, **original_kwargs)
+                if bool(result):
+                    return result
+
+                time.sleep(backoff * attempt)
+
+            return return_value
+
+        return wrapper
+
+    return retry_decorator
+
+
 class InControl2OauthError(Exception):
     pass
 
@@ -36,6 +54,14 @@ class InControl2InvalidToken(Exception):
 
 
 class InControl2UnknownError(Exception):
+    pass
+
+
+class InControl2NoWANsFound(Exception):
+    pass
+
+
+class InControl2NoLocationFound(Exception):
     pass
 
 
@@ -232,31 +258,36 @@ class InControl2Device:
         res = json.loads(res)
         return res.get('data', {})
 
+    @retry(times=3, backoff=10, return_value={})
     async def _update_location(self) -> dict:
         res = await self.session.request(f'o/{self._org_id}/g/{self._group_id}/d/{self._device_id}/loc', {})
         if not res:
-            return {}
+            raise InControl2NoLocationFound()
+
         res = json.loads(res)
-        locations = res.get('data', [])
-        if bool(locations):
-            return {
-                'latitude': locations[0].get('la'),
-                'longitude': locations[0].get('lo'),
-                'altitude': locations[0].get('at'),
-                'speed': locations[0].get('sp'),
-                'timestamp': locations[0].get('ts'),
-            }
+        locations = res.get('data', {})
 
-        return {}
+        if not bool(locations):
+            return locations
 
+        return {
+            'latitude': locations[0].get('la'),
+            'longitude': locations[0].get('lo'),
+            'altitude': locations[0].get('at'),
+            'speed': locations[0].get('sp'),
+            'timestamp': locations[0].get('ts'),
+        }
+
+    @retry(times=3, backoff=10, return_value=[])
     async def _update_wans(self) -> list:
         res = await self.session.request(f'o/{self._org_id}/g/{self._group_id}/d/{self._device_id}/info/interfaces', {})
         if not res:
-            return []
-        res = json.loads(res)
+            raise InControl2NoWANsFound()
 
-        # TODO: This sometimes returns no interfaces.  Should add back-off/retry logic here
-        return res.get('data', [])
+        res = json.loads(res)
+        res = res.get('data', [])
+
+        return res
 
     @property
     def device_id(self) -> int:
