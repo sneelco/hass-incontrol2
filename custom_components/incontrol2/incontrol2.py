@@ -260,7 +260,6 @@ class InControl2Device:
 
     @retry(times=3, backoff=10, return_value={})
     async def _update_location(self) -> dict:
-        # TODO: Use a delta to retrive last hour or two only
         start = datetime.now() + timedelta(hours=-2)
         start = start.strftime("%Y-%m-%dT%H:%M:%S")
         url = f'o/{self._org_id}/g/{self._group_id}/d/{self._device_id}/loc?start={start}'
