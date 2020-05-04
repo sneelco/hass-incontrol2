@@ -260,22 +260,26 @@ class InControl2Device:
 
     @retry(times=3, backoff=10, return_value={})
     async def _update_location(self) -> dict:
-        res = await self.session.request(f'o/{self._org_id}/g/{self._group_id}/d/{self._device_id}/loc', {})
+        start = time.strftime("%Y-%m-%dT00:00:00")
+        url = f'o/{self._org_id}/g/{self._group_id}/d/{self._device_id}/loc?start={start}'
+        res = await self.session.request(url, {})
         if not res:
             raise InControl2NoLocationFound()
 
         res = json.loads(res)
-        locations = res.get('data', {})
+        locations = res.get('data', [])
 
         if not bool(locations):
-            return locations
+            return {}
+
+        location = locations[-1]
 
         return {
-            'latitude': locations[0].get('la'),
-            'longitude': locations[0].get('lo'),
-            'altitude': locations[0].get('at'),
-            'speed': locations[0].get('sp'),
-            'timestamp': locations[0].get('ts'),
+            'latitude': location.get('la'),
+            'longitude': location.get('lo'),
+            'altitude': location.get('at'),
+            'speed': location.get('sp'),
+            'timestamp': location.get('ts'),
         }
 
     @retry(times=3, backoff=10, return_value=[])
