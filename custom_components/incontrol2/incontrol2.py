@@ -4,6 +4,7 @@ import json
 import logging
 import time
 from typing import List
+from aiohttp import ClientSession
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from homeassistant.util import Throttle
@@ -69,7 +70,7 @@ class InControl2OAuth(object):
     OAUTH_AUTHORIZE_URL = 'https://api.ic.peplink.com/api/oauth2/auth'
     OAUTH_TOKEN_URL = 'https://api.ic.peplink.com/api/oauth2/token'
 
-    def __init__(self, client_id: str, client_secret: str, redirect_uri: str, websession):
+    def __init__(self, client_id: str, client_secret: str, redirect_uri: str, websession: ClientSession):
         """Create a InControl2OAuth object."""
         self.client_id = client_id
         self.client_secret = client_secret
