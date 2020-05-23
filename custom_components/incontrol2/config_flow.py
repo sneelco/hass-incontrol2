@@ -8,6 +8,7 @@ from aiohttp.web import Response, HTTPBadRequest, Request
 from homeassistant import config_entries
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.network import get_url
 
 from .const import (
     AUTH_CALLBACK_NAME,
@@ -17,6 +18,7 @@ from .const import (
     DOMAIN,
     STORAGE_KEY,
     STORAGE_VERSION,
+    INCONTROL_URL
 )
 
 DATA_INCONTROL2_IMPL = "incontrol2_flow_implementation"
@@ -46,8 +48,13 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
             return self.async_abort(reason="already_setup")
 
         if not user_input:
+            cb_url = self._cb_url()
             return self.async_show_form(
                 step_id="user",
+                description_placeholders={
+                    "incontrol_url": INCONTROL_URL,
+                    "cb_url": cb_url
+                },
                 data_schema=vol.Schema(self.data_schema),
             )
 
@@ -74,11 +81,14 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
         if not self._registered_view:
             self._generate_view()
 
+        auth_url = await self._get_authorize_url()
+        cb_url = self._cb_url()
+
         return self.async_show_form(
             step_id="auth",
             description_placeholders={
-                "authorization_url": await self._get_authorize_url(),
-                "cb_url": self._cb_url(),
+                "authorization_url": auth_url,
+                "cb_url": cb_url,
             },
             errors=errors,
         )
@@ -123,7 +133,7 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
         return oauth
 
     def _cb_url(self) -> str:
-        return f"{self.hass.config.api.base_url}{AUTH_CALLBACK_PATH}"
+        return f"{get_url(self.hass)}{AUTH_CALLBACK_PATH}"
 
     async def _get_authorize_url(self) -> str:
         oauth = self._generate_oauth()

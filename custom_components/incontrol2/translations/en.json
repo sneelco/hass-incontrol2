@@ -3,6 +3,7 @@
     "step": {
       "user": {
         "title": "InControl2 API Client Configuration",
+        "description": "Visit [{incontrol_url}]({incontrol_url}) and login to create a Client ID and Secret.\nWhen creating the Client ID and Secret, ensure the **Redirect URI** is set to:\n\n{cb_url}\n",
         "data": {
             "client_id": "Client ID",
             "client_secret": "Client Secret"
@@ -10,7 +11,7 @@
       },
       "auth": {
         "title": "Authenticate InControl2",
-        "description": "Please follow this [link]({authorization_url}) and <b>Allow</b> access to your InControl2 account, then come back and press <b>Submit</b> below.\n(Make sure the specified callback url is {cb_url})"
+        "description": "Please follow this [link]({authorization_url}), login and then **Allow** access to your InControl2 account. If you get an **Unauthorized** error, ensure the Redirect URI defined for the API Client matches {cb_url}\n\nOnce complete, come back here and press **Submit** below.\n\n"
       }
     },
     "create_entry": {

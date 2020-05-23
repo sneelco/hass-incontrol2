@@ -1,3 +1,9 @@
 .idea
 configuration.yaml
 core
+*.yaml
+*.log
+*.db
+.HA_VERSION
+.storage
+__pycache__

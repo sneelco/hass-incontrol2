@@ -10,3 +10,4 @@ DATA_INCONTROL2 = "incontrol2"
 
 AUTH_CALLBACK_NAME = "api:incontrol2"
 AUTH_CALLBACK_PATH = "/api/incontrol2"
+INCONTROL_URL = "https://incontrol2.peplink.com/"
