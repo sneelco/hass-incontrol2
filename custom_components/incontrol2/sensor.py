@@ -115,7 +115,7 @@ class InControl2Wan(Entity):
             'mdi:network-strength-4'
         ]
 
-        signal_bars = self._wan.get("signal_bar")
+        signal_bars = self._wan.get("signal_bar", 0)
 
         if signal_bars <= 6:
             return icons[signal_bars]
