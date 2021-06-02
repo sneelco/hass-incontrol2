@@ -1,7 +1,7 @@
 {
   "domain": "incontrol2",
   "name": "InControl2",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "config_flow": true,
   "documentation": "https://www.github.com/sneelco/hass-incontrol2",
   "requirements": [],
