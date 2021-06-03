@@ -8,7 +8,7 @@ The following entities will be created for detected routers:
 * Device tracker with GPS location
 * Overall status of the integration
 
-# Quick and Dirty Instructions
+# Instructions
 1. Install the InControl2 integration however you see fit (HACS, manul, etc)
 2. Restart Home Assistant
 3. Within your home assistant, browse to Configuration->Integrations
