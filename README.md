@@ -11,9 +11,9 @@ The following entities will be created for detected routers:
 # Quick and Dirty Instructions
 1. Install the InControl2 integration however you see fit (HACS, manul, etc)
 2. Restart Home Assistant
-3. Within your home assistant, browser to Configuration->Integrations
+3. Within your home assistant, browse to Configuration->Integrations
 4. Select "Add Integration" and search for InControl2
-5. Note URL provided as this will be used when adding the Client Application on the InControl2 site
+5. Note the URL provided as this will be used when adding the Client Application on the InControl2 site
 6. In another tab or window login to https://incontrol2.peplink.com
 7. Select your username/email in the upper right corner to edit your user
 8. Under Client Applications click the button for "New Client"
