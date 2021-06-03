@@ -20,7 +20,7 @@ The following entities will be created for detected routers:
 9. Enter any name for "Application Name"
 10. Check "Enabled"
 11. Enter any url for "Website"
-7. Enter the Redirect URI noted in step 5. This should be something like http://192.168.0.12:8123/api/incontrol2 but will depend on your environment
+7. Enter the Redirect URI noted in step 5. This should be something like http://192.168.0.12:8123/api/incontrol2 but will depend on your environment.  See the [internal_url](https://www.home-assistant.io/docs/configuration/basic/#internal_url) configuration for home assistant.
 8. Leave Website Restrictions blank
 9. Set Token Type to Bearer
 10. Select Save
