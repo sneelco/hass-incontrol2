@@ -6,5 +6,6 @@
   "documentation": "https://www.github.com/sneelco/hass-incontrol2",
   "requirements": [],
   "dependencies": ["http"],
-  "codeowners": ["@sneelco"]
+  "codeowners": ["@sneelco"],
+  "issue_tracker": "https://github.com/sneelco/hass-incontrol2/issues"
 }
