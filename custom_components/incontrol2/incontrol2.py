@@ -169,6 +169,10 @@ class InControl2Connection(object):
 
     async def request(self, command: str, params: dict, retry: int = 3, get: bool = True) -> str:
         """Request data."""
+
+        # Ensure token is valid
+        self.token_info = await self.oauth.refresh_access_token(self.token_info)
+
         headers = {
             "Accept": "application/json",
             'Authorization': 'Bearer ' + self.token_info.get('access_token')
