@@ -110,9 +110,6 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
         oauth = self._generate_oauth()
         token_info = await oauth.get_access_token(code)
 
-        store = self.hass.helpers.storage.Store(STORAGE_VERSION, STORAGE_KEY)
-        await store.async_save(token_info)
-
         return token_info
 
     def _generate_view(self) -> None:
@@ -123,12 +120,14 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
         config = self.hass.data[DATA_INCONTROL2_IMPL]
         clientsession = async_get_clientsession(self.hass)
         callback_url = self._cb_url()
+        store = self.hass.helpers.storage.Store(STORAGE_VERSION, STORAGE_KEY)
 
         oauth = InControl2OAuth(
             config.get(CONF_CLIENT_ID),
             config.get(CONF_CLIENT_SECRET),
             callback_url,
             clientsession,
+            store,
         )
         return oauth
 

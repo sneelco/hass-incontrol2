@@ -60,6 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         config[CONF_CLIENT_SECRET],
         config["callback_url"],
         websession,
+        store,
     )
 
     try:
@@ -70,8 +71,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not token_info:
         _LOGGER.error("Failed to refresh access token")
         return False
-
-    await store.async_save(token_info)
 
     data_connection = incontrol2.InControl2Connection(
         oauth, token_info=token_info, websession=websession

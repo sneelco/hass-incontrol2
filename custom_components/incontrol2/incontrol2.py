@@ -70,12 +70,13 @@ class InControl2OAuth(object):
     OAUTH_AUTHORIZE_URL = 'https://api.ic.peplink.com/api/oauth2/auth'
     OAUTH_TOKEN_URL = 'https://api.ic.peplink.com/api/oauth2/token'
 
-    def __init__(self, client_id: str, client_secret: str, redirect_uri: str, websession: ClientSession):
+    def __init__(self, client_id: str, client_secret: str, redirect_uri: str, websession: ClientSession, store):
         """Create a InControl2OAuth object."""
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
         self.websession = websession
+        self.store = store
 
     def get_authorize_url(self) -> str:
         """Get the URL to use to authorize this app."""
@@ -101,6 +102,9 @@ class InControl2OAuth(object):
                     raise InControl2OauthError(response.status)
                 token_info = await response.json()
                 token_info['expires_at'] = int(time.time()) + token_info['expires_in']
+
+                await self.store.async_save(token_info)
+
                 return token_info
         except (asyncio.TimeoutError, aiohttp.ClientError):
             msg = "Timeout calling InControl2 to get auth token."
@@ -141,6 +145,9 @@ class InControl2OAuth(object):
 
                 if 'refresh_token' not in token_info:
                     token_info['refresh_token'] = refresh_token
+
+                await self.store.async_save(token_info)
+
                 return token_info
         except (asyncio.TimeoutError, aiohttp.ClientError):
             _LOGGER.error("Timeout calling InControl2 to get auth token.")
