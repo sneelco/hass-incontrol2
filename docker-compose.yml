@@ -1,0 +1,24 @@
+---
+version: "3"
+
+services:
+  dev:
+    build: .devcontainer
+    user: vscode
+    init: true
+    env_file:
+      - .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker-host.sock
+      - .:${LOCAL_WORKSPACE_FOLDER}:cached
+  hass:
+    image: "homeassistant/home-assistant:${HA_VERSION:-latest}"
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - .devcontainer/preconfig.sh:/etc/cont-init.d/preconfig.sh:ro
+      - .devcontainer/preconfig:/preconfig.d/01-integration:ro
+      - .devcontainer/config/configuration.yaml:/config/configuration.yaml:ro
+      - .devcontainer/config/specific_configuration.yaml:/config/specific_configuration.yaml:ro
+      - .devcontainer/config/www:/config/www
+      - ./custom_components:/config/custom_components:ro
