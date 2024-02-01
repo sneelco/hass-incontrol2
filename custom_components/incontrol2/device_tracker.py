@@ -9,7 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.components.device_tracker.config_entry import TrackerEntity
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.components.device_tracker.const import (
-    SOURCE_TYPE_GPS,
+    SourceType
 )
 
 from .const import (
@@ -22,7 +22,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(_hass: HomeAssistant,
                             _entry: ConfigEntry,
                             async_add_entities: Callable[[list, bool], None]) -> None:
-    """Set up the Ambicliamte device from config entry."""
+    """Set up the InControl2 device from config entry."""
     devs = []
     for device in InControl2Device.get_devices():
         devs.append(InControl2DeviceTracker(device, {}))
@@ -70,7 +70,7 @@ class InControl2DeviceTracker(TrackerEntity, RestoreEntity):
     @property
     def source_type(self):
         """Return the source type, eg gps or router, of the device."""
-        return self._data.get("source_type", SOURCE_TYPE_GPS)
+        return self._data.get("source_type", SourceType.GPS)
 
     @property
     def device_info(self):

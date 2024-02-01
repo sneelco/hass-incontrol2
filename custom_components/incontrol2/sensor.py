@@ -73,7 +73,7 @@ class InControl2Vehicle(Entity):
 
     @property
     def state_attributes(self):
-        """Return the state attributes of the sun."""
+        """Return the state attributes of the vehicle."""
         return self._vehicle.data
 
 
