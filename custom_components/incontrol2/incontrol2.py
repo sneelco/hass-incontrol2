@@ -1,4 +1,4 @@
-"""Library to handle connection with Ambiclimate API."""
+"""Library to handle connection with InControl2 API."""
 import asyncio
 import json
 import logging
@@ -29,7 +29,7 @@ def retry(times=3, backoff=10, return_value=None):
                 if bool(result):
                     return result
 
-                time.sleep(backoff * attempt)
+                await asyncio.sleep(backoff * attempt)
 
             return return_value
 
