@@ -42,6 +42,12 @@ class InControl2DeviceTracker(TrackerEntity, RestoreEntity):
 
         self._vehicle.add_entity(self)
 
+    async def async_update(self) -> bool:
+        await self._vehicle.update()
+
+        _LOGGER.debug(f"lat: {self.latitude}, long: {self.longitude}")
+        return True
+
     @property
     def name(self):
         """Return the name of the sensor."""
@@ -70,7 +76,7 @@ class InControl2DeviceTracker(TrackerEntity, RestoreEntity):
     @property
     def source_type(self):
         """Return the source type, eg gps or router, of the device."""
-        return self._data.get("source_type", SourceType.GPS)
+        return SourceType.GPS
 
     @property
     def device_info(self):
