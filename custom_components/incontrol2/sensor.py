@@ -120,6 +120,9 @@ class InControl2Wan(Entity):
     @property
     def state(self):
         """Return the state of the sensor."""
+        if self._wan.get("type") == "ethernet":
+            return self._wan.get("status")
+
         return self._wan.get("signal")
 
     @property
@@ -130,8 +133,17 @@ class InControl2Wan(Entity):
             'mdi:network-strength-1',
             'mdi:network-strength-2',
             'mdi:network-strength-3',
-            'mdi:network-strength-4'
+            'mdi:network-strength-4',
+            'mdi:ethernet',
+            'mdi:ethernet-off'
         ]
+
+        if self._wan.get("type") == "ethernet":
+            status = self._wan.get("status")
+            if "Connected" in status:
+                return icons[6]
+            else:
+                return icons[7]
 
         signal_bars = self._wan.get("signal_bar", 0)
 
