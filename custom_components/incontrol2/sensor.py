@@ -44,6 +44,11 @@ class InControl2Vehicle(Entity):
     def name(self):
         """Return the name of the sensor."""
         return f'{self._vehicle.name} Status'
+    
+    async def async_update(self) -> bool:
+        await self._vehicle.update()
+
+        return True
 
     @property
     def state(self):
@@ -89,6 +94,19 @@ class InControl2Wan(Entity):
         self._data = {}
 
         self._vehicle.add_entity(self)
+
+    async def async_update(self) -> bool:
+        await self._vehicle.update()
+
+        wan = next((wan for wan in self._vehicle.wans if wan.get('id')==self._wan_id), None)
+
+        if wan is None:
+            _LOGGER.debug(f"WAN id {self._wan_id} not found in update")
+            return False
+        
+        self._wan = wan
+
+        return True
 
     @property
     def name(self):
