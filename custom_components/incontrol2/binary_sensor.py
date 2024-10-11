@@ -39,7 +39,6 @@ class InControl2Vehicle(BinarySensorEntity):
         self._data = {}
 
         self._vehicle.add_entity(self)
-        _LOGGER.debug("found device")
 
     @property
     def name(self):
@@ -93,7 +92,6 @@ class InControl2WanStatus(BinarySensorEntity):
         self._data = {}
 
         self._vehicle.add_entity(self)
-        _LOGGER.debug("found wan device")
 
     async def async_update(self) -> bool:
         await self._vehicle.update()

@@ -44,7 +44,6 @@ class InControl2Wan(SensorEntity):
         self._data = {}
 
         self._vehicle.add_entity(self)
-        _LOGGER.debug("found wan device")
 
     async def async_update(self) -> bool:
         await self._vehicle.update()

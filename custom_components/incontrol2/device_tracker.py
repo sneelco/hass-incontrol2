@@ -41,7 +41,6 @@ class InControl2DeviceTracker(TrackerEntity, RestoreEntity):
         self._state = 'offline'
 
         self._vehicle.add_entity(self)
-        _LOGGER.debug("found device_tracker device")
 
     async def async_update(self) -> bool:
         await self._vehicle.update()
