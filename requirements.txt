@@ -1,2 +1,2 @@
 aiohttp
-homeassistant==2023.7.3
+homeassistant==2024.10.1
