@@ -10,6 +10,8 @@ from homeassistant.components.http import HomeAssistantView
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.network import get_url
 
+from typing import Mapping, Any
+
 from .const import (
     AUTH_CALLBACK_NAME,
     AUTH_CALLBACK_PATH,
@@ -27,7 +29,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @config_entries.HANDLERS.register("incontrol2")
-class Incontrol2FlowHandler(config_entries.ConfigFlow):
+class Incontrol2FlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow."""
 
     VERSION = 1
@@ -104,7 +106,13 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
         config = self.hass.data[DATA_INCONTROL2_IMPL].copy()
         config["callback_url"] = self._cb_url()
 
-        return self.async_create_entry(title="InControl2", data=config)
+        id = config.get(CONF_CLIENT_ID)[-5:]
+        unique_id = f"InControl2-{id}"
+        await self.async_set_unique_id(unique_id)
+
+        self._abort_if_unique_id_configured(error="already_configured_account")
+
+        return self.async_create_entry(title=unique_id, data=config)
 
     async def _get_token_info(self, code: str) -> dict:
         oauth = self._generate_oauth()
@@ -137,6 +145,74 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow):
     async def _get_authorize_url(self) -> str:
         oauth = self._generate_oauth()
         return oauth.get_authorize_url()
+
+    """Config flow to handle re-authentication."""
+
+    async def async_step_reauth(
+        self, entry_data: Mapping[str, Any]
+    ):
+        """Perform reauth upon an API authentication error."""
+        # Clear old code
+        if DATA_INCONTROL2_IMPL not in self.hass.data or self.hass.data[DATA_INCONTROL2_IMPL] is None:
+            if entry_data is not None:
+                if "code" in entry_data:
+                    del entry_data["code"]
+
+                self.hass.data[DATA_INCONTROL2_IMPL] = entry_data
+            else:
+                self.hass.data[DATA_INCONTROL2_IMPL] = {}
+
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ):
+        """Dialog that informs the user that reauth is required."""
+
+        config = self.hass.data[DATA_INCONTROL2_IMPL]
+
+        errors = {}
+
+        if "code" in config:
+            return await self.async_step_reauth_code(config["code"])
+
+        if user_input is not None:
+            errors["base"] = "follow_link"
+
+        if not self._registered_view:
+            self._generate_view()
+
+        auth_url = await self._get_authorize_url()
+        cb_url = self._cb_url()
+
+        return self.async_show_form(
+            step_id="reauth",
+            description_placeholders={
+                "authorization_url": auth_url,
+                "cb_url": cb_url,
+            },
+            errors=errors,
+        )
+
+    async def async_step_reauth_code(self, code: str = None) -> dict:
+        """Received code for authentication."""
+
+        try:
+            await self._get_token_info(code)
+        except InControl2OauthError:
+            return self.async_abort(reason="access_token")
+
+        config = self.hass.data[DATA_INCONTROL2_IMPL].copy()
+        config["callback_url"] = self._cb_url()
+
+        id = config.get(CONF_CLIENT_ID)[-5:]
+        unique_id = f"InControl2-{id}"
+
+        entry = await self.async_set_unique_id(unique_id)
+
+        self.hass.config_entries.async_update_entry(entry=entry, data=config)
+
+        return self.async_abort(reason="reauth_successful")
 
 
 class Incontrol2AuthCallbackView(HomeAssistantView):

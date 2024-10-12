@@ -8,6 +8,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.config_entries import ConfigEntryAuthFailed
 
 from . import config_flow
 from .const import (
@@ -65,12 +66,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     try:
         token_info = await oauth.refresh_access_token(token_info)
-    except incontrol2.InControl2OauthError:
-        token_info = None
-
-    if not token_info:
+    except incontrol2.InControl2OauthError as err:
         _LOGGER.error("Failed to refresh access token")
-        return False
+        token_info = None
+        raise ConfigEntryAuthFailed(err) from err
 
     data_connection = incontrol2.InControl2Connection(
         oauth, token_info=token_info, websession=websession
