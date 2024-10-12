@@ -106,8 +106,9 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         config = self.hass.data[DATA_INCONTROL2_IMPL].copy()
         config["callback_url"] = self._cb_url()
 
-        unique_id = config.get(CONF_CLIENT_ID)
-        await self.async_set_unique_id("uniqInue_id")
+        id = config.get(CONF_CLIENT_ID)[-5:]
+        unique_id = f"InControl2-{id}"
+        await self.async_set_unique_id(unique_id)
 
         self._abort_if_unique_id_configured(error="already_configured_account")
 
@@ -204,7 +205,9 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         config = self.hass.data[DATA_INCONTROL2_IMPL].copy()
         config["callback_url"] = self._cb_url()
 
-        unique_id = config.get(CONF_CLIENT_ID)
+        id = config.get(CONF_CLIENT_ID)[-5:]
+        unique_id = f"InControl2-{id}"
+
         entry = await self.async_set_unique_id(unique_id)
 
         self.hass.config_entries.async_update_entry(entry=entry, data=config)
