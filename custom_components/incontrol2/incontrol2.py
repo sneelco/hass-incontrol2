@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from homeassistant.util import Throttle
 from homeassistant.helpers.entity import Entity
+from homeassistant.config_entries import ConfigEntryAuthFailed
 
 import aiohttp
 import async_timeout
@@ -101,7 +102,8 @@ class InControl2OAuth(object):
                 if response.status != 200:
                     raise InControl2OauthError(response.status)
                 token_info = await response.json()
-                token_info['expires_at'] = int(time.time()) + token_info['expires_in']
+                token_info['expires_at'] = int(
+                    time.time()) + token_info['expires_in']
 
                 await self.store.async_save(token_info)
 
@@ -112,7 +114,8 @@ class InControl2OAuth(object):
 
             raise InControl2Timeout(msg)
 
-        raise InControl2UnknownError("Unknown error attempting to get access token")
+        raise InControl2UnknownError(
+            "Unknown error attempting to get access token")
 
     async def refresh_access_token(self, token_info: dict) -> dict:
         """Refresh access token."""
@@ -141,7 +144,8 @@ class InControl2OAuth(object):
                     raise InControl2OauthError(msg, response)
 
                 token_info = await response.json()
-                token_info['expires_at'] = int(time.time()) + token_info['expires_in']
+                token_info['expires_at'] = int(
+                    time.time()) + token_info['expires_in']
 
                 if 'refresh_token' not in token_info:
                     token_info['refresh_token'] = refresh_token
@@ -152,7 +156,8 @@ class InControl2OAuth(object):
         except (asyncio.TimeoutError, aiohttp.ClientError):
             _LOGGER.error("Timeout calling InControl2 to get auth token.")
 
-        raise InControl2UnknownError("Unknown error attempting to refresh token")
+        raise InControl2UnknownError(
+            "Unknown error attempting to refresh token")
 
 
 class InControl2Connection(object):
@@ -178,7 +183,10 @@ class InControl2Connection(object):
         """Request data."""
 
         # Ensure token is valid
-        self.token_info = await self.oauth.refresh_access_token(self.token_info)
+        try:
+            self.token_info = await self.oauth.refresh_access_token(self.token_info)
+        except InControl2OauthError as err:
+            raise ConfigEntryAuthFailed(err) from err
 
         headers = {
             "Accept": "application/json",
