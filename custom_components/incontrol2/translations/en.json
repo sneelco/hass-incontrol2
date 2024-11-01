@@ -5,12 +5,16 @@
         "title": "InControl2 API Client Configuration",
         "description": "Visit [{incontrol_url}]({incontrol_url}) and login to create a Client ID and Secret.\nWhen creating the Client ID and Secret, ensure the **Redirect URI** is set to:\n\n{cb_url}\n",
         "data": {
-            "client_id": "Client ID",
-            "client_secret": "Client Secret"
+          "client_id": "Client ID",
+          "client_secret": "Client Secret"
         }
       },
       "auth": {
         "title": "Authenticate InControl2",
+        "description": "Please follow this [link]({authorization_url}), login and then **Allow** access to your InControl2 account. If you get an **Unauthorized** error, ensure the Redirect URI defined for the API Client matches {cb_url}\n\nOnce complete, come back here and press **Submit** below.\n\n"
+      },
+      "reauth": {
+        "title": "Re-Authenticate InControl2",
         "description": "Please follow this [link]({authorization_url}), login and then **Allow** access to your InControl2 account. If you get an **Unauthorized** error, ensure the Redirect URI defined for the API Client matches {cb_url}\n\nOnce complete, come back here and press **Submit** below.\n\n"
       }
     },
@@ -24,7 +28,8 @@
     "abort": {
       "already_setup": "The InControl2 account is configured.",
       "no_config": "You need to configure InControl2 before being able to authenticate with it. [Please read the instructions](https://www.github.com/sneelco/hass-incontrol2/).",
-      "access_token": "Unknown error generating an access token."
+      "access_token": "Unknown error generating an access token.",
+      "reauth_successful": "Successfully reauthenticated with InControl2"
     }
   }
 }
