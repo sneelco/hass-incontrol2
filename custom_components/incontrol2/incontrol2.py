@@ -267,7 +267,10 @@ class InControl2Device:
         self._wans = await self._update_wans()
 
         for entity in self.entities:
-            entity.async_schedule_update_ha_state(True)
+            if not entity.enabled:
+                continue
+
+            entity.async_schedule_update_ha_state()
 
         return True
 
