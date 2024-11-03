@@ -82,14 +82,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data[DATA_INCONTROL2] = incontrol2.InControl2Device
 
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(entry, "binary_sensor")
-    )
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(entry, "sensor")
-    )
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(entry, "device_tracker")
-    )
+    await hass.config_entries.async_forward_entry_setups(entry, ["binary_sensor", "sensor", "device_tracker"])
 
     return True
