@@ -6,6 +6,7 @@ from . import incontrol2
 
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.config_entries import ConfigEntryAuthFailed
@@ -53,7 +54,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     config = entry.data
     websession = async_get_clientsession(hass)
-    store = hass.helpers.storage.Store(STORAGE_VERSION, STORAGE_KEY)
+    store = Store(hass=hass, key=STORAGE_KEY, version=STORAGE_VERSION)
     token_info = await store.async_load()
 
     oauth = incontrol2.InControl2OAuth(

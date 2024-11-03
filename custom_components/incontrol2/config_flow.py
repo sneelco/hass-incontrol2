@@ -7,6 +7,7 @@ import voluptuous as vol
 from aiohttp.web import Response, HTTPBadRequest, Request
 from homeassistant import config_entries
 from homeassistant.components.http import HomeAssistantView
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.network import get_url
 
@@ -128,7 +129,7 @@ class Incontrol2FlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         config = self.hass.data[DATA_INCONTROL2_IMPL]
         clientsession = async_get_clientsession(self.hass)
         callback_url = self._cb_url()
-        store = self.hass.helpers.storage.Store(STORAGE_VERSION, STORAGE_KEY)
+        store = Store(hass=self.hass, key=STORAGE_KEY, version=STORAGE_VERSION)
 
         oauth = InControl2OAuth(
             config.get(CONF_CLIENT_ID),
